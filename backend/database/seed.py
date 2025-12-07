@@ -169,7 +169,9 @@ def _create_clubs(n: int) -> List[Club]:
             random.choice(GENRES)
         ))
     for name, genre in base[:n]:
-        clubs.append(Club(club_name=name, club_genre=genre))
+        # Generate a slug from the name
+        slug = name.strip().lower().replace(' ', '-')
+        clubs.append(Club(club_name=name, slug=slug, description=f"A club about {genre}"))
     db.session.add_all(clubs)
     db.session.commit()
     return clubs

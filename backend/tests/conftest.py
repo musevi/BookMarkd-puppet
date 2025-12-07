@@ -42,10 +42,10 @@ def runner(app):
 
 @pytest.fixture
 def sample_user(app):
-    """Create a sample user for testing"""
+    """Create a sample user for testing and return user_id"""
     with app.app_context():
         user = User(username='testuser', email='test@example.com')
         user.set_password('password123')
         db.session.add(user)
         db.session.commit()
-        return user
+        return user.user_id
