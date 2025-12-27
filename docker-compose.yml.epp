@@ -1,0 +1,50 @@
+version: "3.8"
+
+services:
+  # MySQL Database
+  db:
+    image: mysql:8.0
+    container_name: bookmarkd-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: bookmarkd
+      MYSQL_USER: bookmarkd_user
+      MYSQL_PASSWORD: bookmarkd_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Flask Backend
+  backend:
+    build: ./backend
+    container_name: bookmarkd-backend
+    environment:
+      DATABASE_URL: mysql://bookmarkd_user:bookmarkd_pass@db:3306/bookmarkd
+      FLASK_ENV: development
+    ports:
+      - "5001:5001"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+
+  # React Frontend
+  frontend:
+    build: 
+      context: ./frontend
+      args:
+        VITE_API_URL: http://<%= $api_host %>:5001
+    container_name: bookmarkd-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:
